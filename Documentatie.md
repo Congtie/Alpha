@@ -9,9 +9,7 @@ Euristica este o funcție care estimează cât de favorabilă este o stare a joc
 
 ## 2. Justificarea euristicii pentru A* și IDA*
 Pentru algoritmii A* și IDA*, euristica folosește **distanța euclidiană** între noduri. Aceasta este definită ca:
-<script type="text/javascript" async
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
+
 $$
 h(n) = \min_{goal \in goals} \sqrt{(x_n - x_{goal})^2 + (y_n - y_{goal})^2}
 $$
