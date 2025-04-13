@@ -22,9 +22,9 @@ Fișierul `main.py` implementează algoritmii **A*** și **IDA*** pentru a găsi
 
 ### b. Euristica utilizată
 Euristica este definită ca:
-\[
-h(n) = \min_{goal \in goals} \sqrt{(x_n - x_{goal})^2 + (y_n - y_{goal})^2}
-\]
+
+$$h(n) = \min_{goal \in goals} \sqrt{(x_n - x_{goal})^2 + (y_n - y_{goal})^2}$$
+
 Aceasta garantează admisibilitatea și consistența, asigurând soluții optime.
 
 ### c. Implementare
@@ -77,9 +77,8 @@ Fișierul `main2.py` implementează o abordare bazată pe **Rețele Bayesiene** 
 
 ### c. Calculul probabilității de câștig
 Probabilitatea de câștig este calculată folosind o combinație liniară a factorilor:
-\[
-P_{win}(x) = 0.4 \cdot \text{mills} + 0.3 \cdot \text{blocking} + 0.2 \cdot \text{pieces} + 0.1 \cdot \text{strategic}
-\]
+
+$$P_{win}(x) = 0.4 \cdot \text{mills} + 0.3 \cdot \text{blocking} + 0.2 \cdot \text{pieces} + 0.1 \cdot \text{strategic}$$
 
 ### d. Avantaje și Dezavantaje
 - **Avantaje**: Flexibilitate și robustețe în evaluarea stării tablei.
