@@ -1,8 +1,6 @@
 import math
 import heapq
 
-# Graful este reprezentat printr-un dicționar unde fiecare nod are ca valoare alt dicționar
-# ce conține vecinii și costul pentru arc.
 graph = {
     1:  {2: 2, 3: 4},
     2:  {1: 2, 4: 6, 5: 3},
@@ -30,8 +28,6 @@ graph = {
     24: {20: 2}
 }
 
-# Pentru euristică folosim coordonate (x,y) pentru fiecare nod.
-# Aceste coordonate sunt alese astfel încât să permită calculul unei distanțe aproximative față de nodurile scop.
 coords = {
     1:  (0, 0),
     2:  (1, 2),
@@ -84,30 +80,23 @@ def a_star_search(graph, start, goals, steps):
     Returnează o listă de tuple (nod, f) pentru nodurile expandate,
     precum și un flag care indică dacă s-a atins un nod scop.
     """
-    # Vom folosi o coadă de prioritate pentru open_list
-    # Fiecare element este un tuple: (f, g, nod, cale)
     open_list = []
-    # Inițializarea lui g: costul de la start până la fiecare nod
     g_scores = {node: float('inf') for node in graph}
     g_scores[start] = 0
 
     start_f = g_scores[start] + heuristic(start, goals)
     heapq.heappush(open_list, (start_f, 0, start, [start]))
 
-    # Pentru a ține evidența nodurilor deja expandate
     closed_set = set()
 
-    # Lista care stochează nodurile expandate, împreună cu valoarea lor f
     expanded_nodes = []
 
     current_step = 0
 
     while open_list and current_step < steps:
-        # Extragem nodul cu f minim
         f, g_val, current, path = heapq.heappop(open_list)
         expanded_nodes.append((current, f))
 
-        # Dacă am ajuns într-un nod scop, oprim căutarea
         if current in goals:
             return expanded_nodes, True
 
@@ -118,20 +107,17 @@ def a_star_search(graph, start, goals, steps):
             if neighbor in closed_set:
                 continue
             tentative_g = g_val + cost
-            # Dacă găsim un drum mai bun spre vecin:
             if tentative_g < g_scores[neighbor]:
                 g_scores[neighbor] = tentative_g
                 f_neighbor = tentative_g + heuristic(neighbor, goals)
                 heapq.heappush(open_list, (f_neighbor, tentative_g, neighbor, path + [neighbor]))
     return expanded_nodes, False
 
-# Pentru completitudine se poate adăuga și o versiune a IDA*.
-# Aceasta folosește recursivitatea și mărește treptat limita.
 def ida_star_search(graph, start, goals, steps):
     """
     Implementare simplificată a algoritmului IDA*, cu oprire după un număr maxim de pași.
     Observație: IDA* se bazează pe backtracking recursiv și nu se aliniază
-    la un „număr de pași” la fel ca A*. Aici folosim o limită de expansiuni.
+    la un „număr de pași" la fel ca A*. Aici folosim o limită de expansiuni.
 
     Returnează o listă a nodurilor expandate (în ordinea expansiunii împreună cu f)
     și un flag care indică dacă s-a atins un nod scop.
@@ -147,14 +133,14 @@ def ida_star_search(graph, start, goals, steps):
             return f
         if current in goals:
             expanded_nodes.append((current, f))
-            return current  # semnalăm că s-a atins nod scop
+            return current
         expanded_nodes.append((current, f))
         num_expansions += 1
         if num_expansions >= steps:
-            return None  # s-a atins limita de pași
+            return None
         min_threshold = float('inf')
         for neighbor, cost in graph[current].items():
-            if neighbor in path:  # evităm ciclurile
+            if neighbor in path:
                 continue
             result = search(path + [neighbor], g + cost, bound)
             if result == current or isinstance(result, int):
@@ -166,7 +152,7 @@ def ida_star_search(graph, start, goals, steps):
     bound = heuristic(start, goals)
     while True:
         result = search([start], 0, bound)
-        if isinstance(result, int):  # s-a găsit un nod scop
+        if isinstance(result, int):
             return expanded_nodes, True
         if result == float('inf'):
             return expanded_nodes, False
@@ -175,13 +161,10 @@ def ida_star_search(graph, start, goals, steps):
             break
     return expanded_nodes, False
 
-# Blocul principal de rulare
 if __name__ == '__main__':
-    # Setări inițiale, de exemplu:
     start_node = 12
     goal_nodes = [1, 20]
 
-    # Citim numărul de pași și tipul de algoritm de la utilizator
     try:
         n_steps = int(input("Introduceți numărul de pași: "))
     except ValueError:
@@ -198,9 +181,7 @@ if __name__ == '__main__':
         print("Algoritm necunoscut. Utilizați 'A*' sau 'IDA*'.")
         exit(1)
 
-    # Afișăm rezultatele:
     if reached:
-        # Dacă s-a atins un nod scop, afișăm doar acel nod și valoarea f corespunzătoare
         node, f_val = expansions[-1]
         print(f"Scop atins: {node} (f = {f_val:.2f})")
     else:

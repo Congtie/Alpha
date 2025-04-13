@@ -11,19 +11,15 @@ class NineMensMorrisGame:
         self.board = board_state
         self.pieces_to_place = pieces_to_place
         
-        # Define the mill patterns (positions that form mills)
         self.mills = [
-            # Horizontal mills
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
             [9, 10, 11], [12, 13, 14], [15, 16, 17],
             [18, 19, 20], [21, 22, 23],
-            # Vertical mills
             [0, 9, 21], [3, 10, 18], [6, 11, 15],
             [1, 4, 7], [16, 19, 22], [8, 12, 17],
             [5, 13, 20], [2, 14, 23]
         ]
             
-        # Define the adjacent positions for each position
         self.adjacency = {
             0: [1, 9],
             1: [0, 2, 4],
@@ -86,7 +82,6 @@ class NineMensMorrisGame:
         """
         possible_moves = []
         
-        # Phase 1: Placing pieces
         if player == 'x' and self.pieces_to_place[0] > 0 or player == '0' and self.pieces_to_place[1] > 0:
             empty_positions = self.get_empty_positions()
             
@@ -94,19 +89,15 @@ class NineMensMorrisGame:
                 new_board = self.board.copy()
                 new_board[pos] = player
                 
-                # Update pieces to place
                 new_pieces_to_place = list(self.pieces_to_place)
                 if player == 'x':
                     new_pieces_to_place[0] -= 1
                 else:
                     new_pieces_to_place[1] -= 1
                 
-                # Check if a mill is formed
                 if self.is_mill(pos, player):
-                    # If a mill is formed, can remove opponent's piece
                     opponent_positions = self.get_player_positions(opponent)
                     for opp_pos in opponent_positions:
-                        # Cannot remove pieces that are part of a mill unless no other option
                         if not self.is_mill(opp_pos, opponent) or all(self.is_mill(p, opponent) for p in opponent_positions):
                             new_board_after_remove = new_board.copy()
                             new_board_after_remove[opp_pos] = ','
@@ -114,11 +105,9 @@ class NineMensMorrisGame:
                 else:
                     possible_moves.append((new_board, tuple(new_pieces_to_place)))
         
-        # Phase 2: Moving pieces
         else:
             player_positions = self.get_player_positions(player)
             
-            # If player has only 3 pieces left, they can fly (place anywhere)
             if len(player_positions) <= 3:
                 for pos in player_positions:
                     for empty_pos in self.get_empty_positions():
@@ -126,12 +115,9 @@ class NineMensMorrisGame:
                         new_board[pos] = ','
                         new_board[empty_pos] = player
                         
-                        # Check if a mill is formed
                         if self.is_mill(empty_pos, player):
-                            # If a mill is formed, can remove opponent's piece
                             opponent_positions = self.get_player_positions(opponent)
                             for opp_pos in opponent_positions:
-                                # Cannot remove pieces that are part of a mill unless no other option
                                 if not self.is_mill(opp_pos, opponent) or all(self.is_mill(p, opponent) for p in opponent_positions):
                                     new_board_after_remove = new_board.copy()
                                     new_board_after_remove[opp_pos] = ','
@@ -139,7 +125,6 @@ class NineMensMorrisGame:
                         else:
                             possible_moves.append((new_board, self.pieces_to_place))
             else:
-                # Normal movement to adjacent positions
                 for pos in player_positions:
                     for adj_pos in self.adjacency[pos]:
                         if self.board[adj_pos] == ',':
@@ -147,12 +132,9 @@ class NineMensMorrisGame:
                             new_board[pos] = ','
                             new_board[adj_pos] = player
                             
-                            # Check if a mill is formed
                             if self.is_mill(adj_pos, player):
-                                # If a mill is formed, can remove opponent's piece
                                 opponent_positions = self.get_player_positions(opponent)
                                 for opp_pos in opponent_positions:
-                                    # Cannot remove pieces that are part of a mill unless no other option
                                     if not self.is_mill(opp_pos, opponent) or all(self.is_mill(p, opponent) for p in opponent_positions):
                                         new_board_after_remove = new_board.copy()
                                         new_board_after_remove[opp_pos] = ','
@@ -167,18 +149,14 @@ class NineMensMorrisGame:
         Heuristic evaluation function for the current board state.
         A positive value favors 'x' (MAX), a negative value favors '0' (MIN).
         """
-        # Count pieces on the board
         x_pieces = self.board.count('x')
         o_pieces = self.board.count('0')
         
-        # Add pieces yet to be placed
         x_total = x_pieces + self.pieces_to_place[0]
         o_total = o_pieces + self.pieces_to_place[1]
         
-        # Piece difference (weighted)
         piece_difference = 3 * (x_pieces - o_pieces)
         
-        # Count mills
         x_mills = 0
         o_mills = 0
         counted_mills = set()
@@ -195,35 +173,29 @@ class NineMensMorrisGame:
                     o_mills += 1
                     counted_mills.add(mill_key)
         
-        # Mills difference (weighted heavily)
         mill_difference = 6 * (x_mills - o_mills)
         
-        # Mobility: count possible moves for each player
         x_mobility = len(self.get_possible_moves('x', '0'))
         o_mobility = len(self.get_possible_moves('0', 'x'))
         mobility_difference = x_mobility - o_mobility
         
-        # Potential mills: count possible mills that can be formed in one move
         x_potential_mills = self._count_potential_mills('x')
         o_potential_mills = self._count_potential_mills('0')
         potential_mills_difference = 2 * (x_potential_mills - o_potential_mills)
         
-        # Blocked opponent pieces: count opponent pieces that cannot move
         x_blocked = sum(1 for pos in self.get_player_positions('x') if not self.can_move(pos, 'x'))
         o_blocked = sum(1 for pos in self.get_player_positions('0') if not self.can_move(pos, '0'))
         blocked_difference = o_blocked - x_blocked
         
-        # Game ending conditions
         if o_pieces <= 2 and self.pieces_to_place[1] == 0:
-            return 1000  # MAX wins
+            return 1000
         if x_pieces <= 2 and self.pieces_to_place[0] == 0:
-            return -1000  # MIN wins
+            return -1000
         if o_mobility == 0 and self.pieces_to_place[1] == 0:
-            return 1000  # MAX wins (opponent is blocked)
+            return 1000
         if x_mobility == 0 and self.pieces_to_place[0] == 0:
-            return -1000  # MIN wins (we are blocked)
+            return -1000
         
-        # Combine all factors
         return piece_difference + mill_difference + mobility_difference + potential_mills_difference + blocked_difference
     
     def _count_potential_mills(self, player):
@@ -262,17 +234,14 @@ class NineMensMorrisGame:
         best_move = None
         possible_moves = self.get_possible_moves(player, opponent)
         
-        # No possible moves means game is over
         if not possible_moves:
             return (-1000 if is_maximizing else 1000), None
         
         for move in possible_moves:
             new_board, new_pieces_to_place = move
             
-            # Create a new game instance for the new state
             new_game = NineMensMorrisGame(new_board, new_pieces_to_place)
             
-            # Recursively evaluate this move
             score, _ = new_game.minimax(depth - 1, alpha, beta, not is_maximizing, use_alpha_beta)
             
             if is_maximizing and score > best_score:
@@ -309,7 +278,6 @@ class NineMensMorrisGame:
     
     def format_board(self, board):
         """Format the board for human-readable output matching the reference image."""
-        # Convert board representation to symbols
         symbols = []
         for i in range(24):
             if i < len(board):
@@ -322,7 +290,6 @@ class NineMensMorrisGame:
             else:
                 symbols.append(' ')
         
-        # Create a board representation matching the reference image
         formatted_board = f"""
 {symbols[0]}-----------------------{symbols[1]}-----------------------{symbols[2]}
 |                       |                       |
@@ -362,7 +329,6 @@ def solve_nine_mens_morris(board_state, pieces_to_place, algorithm, depth):
         best_board, new_pieces_to_place = best_move
         formatted_board = game.format_board(best_board)
         
-        # Also display information about the move
         x_pieces = best_board.count('x')
         o_pieces = best_board.count('0')
         
@@ -383,16 +349,12 @@ def solve_nine_mens_morris(board_state, pieces_to_place, algorithm, depth):
         return "No valid moves available", board_state
 
 
-# Example usage
 if __name__ == "__main__":
-    # Example from the task description
     board_state = [",", ",", ",", "", 'x', "", '0', "", 'x', 'x', '0', 'x', ",", "", '0', 'x', '0', 'x', "", '0', ""]
     pieces_to_place = (3, 4)
     algorithm = "AlphaBeta"
     depth = 3
     
-    # Parse the board state to a list of 24 positions
-    # Fill any missing positions with commas (empty)
     parsed_board = []
     for i in range(24):
         if i < len(board_state) and board_state[i] != "":
